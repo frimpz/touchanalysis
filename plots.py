@@ -29,22 +29,21 @@ def create_boxplots(data=None):
         box.set(facecolor=colors[index])
         index = index+1
 
-    #
-    # # change color and linewidth of the whiskers
-    # for whisker in bp['whiskers']:
-    #     whisker.set(color='#7570b3', linewidth=2)
+    # change color and linewidth of the whiskers
+    for whisker in bp['whiskers']:
+        whisker.set(color='#7570b3', linewidth=2)
     #
     # # change color and linewidth of the caps
-    # for cap in bp['caps']:
-    #     cap.set(color='#7570b3', linewidth=2)
-    #
-    # # change color and linewidth of the medians
-    # for median in bp['medians']:
-    #     median.set(color='#b2df8a', linewidth=2)
-    #
-    # # change the style of fliers and their fill
-    # for flier in bp['fliers']:
-    #     flier.set(marker='o', color='#e7298a', alpha=0.5)
+    for cap in bp['caps']:
+        cap.set(color='#7570b3', linewidth=2)
+
+    # change color and linewidth of the medians
+    for median in bp['medians']:
+        median.set(color='#b2df8a', linewidth=2)
+
+    # change the style of fliers and their fill
+    for flier in bp['fliers']:
+        flier.set(marker='o', color='#e7298a', alpha=0.5)
 
     ax.get_xaxis().tick_bottom()
     ax.get_yaxis().tick_left()
@@ -54,3 +53,6 @@ def create_boxplots(data=None):
 
 create_boxplots()
 
+
+color = list(np.random.choice(range(256), size=3))
+print(color)

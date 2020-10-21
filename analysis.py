@@ -82,9 +82,7 @@ print(result.groupby(['gender', 'Category']).size())
 print(result.shape)
 
 
-model = BayesianModel([('Monkey', 'Category'), ('Left_categ', 'Category'), ('Right_categ', 'Category'),
-                       ('Monkey', 'left_select'), ('Left_categ', 'left_select'), ('Right_categ', 'left_select'),
-                       ('Monkey', 'right_select'), ('Left_categ', 'right_select'), ('Right_categ', 'right_select')])
+model = BayesianModel([('Monkey', 'Category'), ('Left_categ', 'Category'), ('Right_categ', 'Category')])
 monkeys = list(dic.keys())
 # Columns start from 2 to end
 column_names = ["Monkey", "Left_categ", "Right_categ", "Preffered_Category", 'Preffered_Left',
@@ -99,12 +97,12 @@ item_name ="Monkey"
 def monkey_prefference():
 
     cat_est = BayesianEstimator(model, cat_result)
-    lft_est = BayesianEstimator(model, lft_result)
-    rgt_est = BayesianEstimator(model, rgt_result)
+    # lft_est = BayesianEstimator(model, lft_result)
+    # rgt_est = BayesianEstimator(model, rgt_result)
 
     cat_cpd = cat_est.estimate_cpd('Category', prior_type="BDeu", equivalent_sample_size=6).to_factor()
-    lft_cpd = lft_est.estimate_cpd('left_select', prior_type="BDeu", equivalent_sample_size=6).to_factor()
-    rgt_cpd = rgt_est.estimate_cpd('right_select', prior_type="BDeu", equivalent_sample_size=6).to_factor()
+    # lft_cpd = lft_est.estimate_cpd('left_select', prior_type="BDeu", equivalent_sample_size=6).to_factor()
+    # rgt_cpd = rgt_est.estimate_cpd('right_select', prior_type="BDeu", equivalent_sample_size=6).to_factor()
 
     print(cat_cpd)
 
