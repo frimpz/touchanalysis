@@ -10,10 +10,9 @@ import numpy as np
     """
 
 
-def create_boxplots(data=None):
-    if not data:
+def create_boxplots(data=None, title=""):
+    if data is None:
         data = {'ABC': [1, 2, 3, 8, 10], 'DEF': [2, 4, 6]}
-
 
     x_label = data.keys()
     data_to_plot = data.values()
@@ -22,7 +21,7 @@ def create_boxplots(data=None):
     bp = ax.boxplot(data_to_plot, patch_artist=True)
     ax.set_xticklabels(x_label)
 
-    colors = ['red', 'yellow']
+    colors = ['red', 'yellow', 'green', 'blue', 'orange', 'violet']
     index = 0
     # # change outline color, fill color and linewidth of the boxes
     for box in bp['boxes']:
@@ -48,11 +47,12 @@ def create_boxplots(data=None):
     ax.get_xaxis().tick_bottom()
     ax.get_yaxis().tick_left()
     ax.legend([bp["boxes"][0], bp["boxes"][1]], ['A', 'B'], loc='upper right')
+    ax.title.set_text(title)
     plt.show()
 
 
-create_boxplots()
-
-
-color = list(np.random.choice(range(256), size=3))
-print(color)
+# create_boxplots()
+#
+#
+# color = list(np.random.choice(range(256), size=3))
+# print(color)
