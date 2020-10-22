@@ -97,7 +97,28 @@ def create_plots(data_files, folder):
             create_boxplots(data=data, title=title, filename=folder + left + "-" + right + ".jpg")
 
 
-def monkey_pref(filename="monkey.xlsx", data_frame=cat_result):
+# Creates a file that shows a monkeys overall category prefference given the left category and right category.
+# Sheet 1 shows the number of times a monkey chose a picture from some category x,
+# given that the picture on the left belongs to category A and the picture on the right
+# belongs to category B for each monkey given the left category and right category
+
+# Sheet 2 shows the joint probability of a monkey choosing a category
+# given that the picture on the left belongs to category A and the picture on the right
+# belongs to category B for each monkey given the left category and right category
+
+# Sheet 3 shows the overall preference of a monkey.
+# Here is where I am quiet unsure. A monkey can have a very high preference
+# for some category depending on the pictures on the left and right.
+# I would suggest we use a threshold, instead of the overall preference
+# I will discuss with Dr. Baker
+
+# A box plot is created for each pair of left category -- right category combination.
+# Say for left: Nature and right : Aggressive, we show the probability shape of
+# the distribution for all 6 categories aggressive, Affiliative, Nature, 'Cynomolgus', 'Fruit' and 'Lab'
+
+# The file is typically named: monkey_pref.xlsx and plots are in figs directory
+
+def monkey_pref(filename="monkey_pref.xlsx", data_frame=cat_result):
     writer = pd.ExcelWriter(filename)
     categories = ['Nature', 'Affiliative', 'Aggressive', 'Cynomolgus', 'Fruit',  'Lab']
     model = BayesianModel([('Monkey', 'Category'), ('Left_categ', 'Category'), ('Right_categ', 'Category')])
@@ -123,7 +144,6 @@ def monkey_pref(filename="monkey.xlsx", data_frame=cat_result):
     counts_df = pd.DataFrame.from_records(count[1:], columns=count[0])
     counts_df.to_excel(writer, sheet_name='Counts of Occurrence')
     create_plots(count_dic, "figs2/")
-
 
     cat_cpd = z.estimate_cpd('Category', prior_type="BDeu", equivalent_sample_size=6).to_factor()
     monkeys = list(dic.keys())
@@ -156,4 +176,4 @@ def monkey_pref(filename="monkey.xlsx", data_frame=cat_result):
     writer.save()
 
 
-monkey_pref("monkey.xlsx", cat_result)
+monkey_pref("monkey_pref.xlsx", cat_result)
