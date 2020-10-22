@@ -1,0 +1,22 @@
+Here are the questions for the picture preference test:
+
+1.	For all monkeys, list categories in overall preference, either left or right.
+2.	For all monkeys, list categories of preference for left side.
+3.	For all monkeys, list categories of preference for right side.
+
+4.	For female monkeys, list categories in overall preference, either left or right.
+5.	For female monkeys, list categories of preference for left side.
+6.	For female monkeys, list categories of preference for right side.
+
+7.	For male monkeys, list categories in overall preference, either left or right.
+8.	For male monkeys, list categories of preference for left side.
+9.	For male monkeys, list categories of preference for right side.
+
+10.	Given a category chosen as a preference over all animals, list the preference of the unchosen categories.
+11.	Given a category chosen as a preference over female animals, list the preference of the unchosen categories.
+12.	Given a category chosen as a preference over male animals, list the preference of the unchosen categories.
+13.	Repeat 10 - 12 on a left vs right basis.
+
+14.	What is the probability of a category NOT being chosen for all animals?
+15.	What is the probability of a category NOT being chosen for female animals?
+16.	What is the probability of a category NOT being chosen for male animals?

@@ -10,7 +10,7 @@ import numpy as np
     """
 
 
-def create_boxplots(data=None, title=""):
+def create_boxplots(data=None, title="", filename=""):
     if data is None:
         data = {'ABC': [1, 2, 3, 8, 10], 'DEF': [2, 4, 6]}
 
@@ -46,10 +46,14 @@ def create_boxplots(data=None, title=""):
 
     ax.get_xaxis().tick_bottom()
     ax.get_yaxis().tick_left()
-    ax.legend([bp["boxes"][0], bp["boxes"][1]], ['A', 'B'], loc='upper right')
+    bx = []
+    for i in bp['boxes']:
+        bx.append(i)
+    ax.legend(bx, list(x_label), loc='upper right')
     ax.title.set_text(title)
-    plt.show()
-
+    plt.savefig(filename, dpi=100)
+    # plt.show()
+    plt.clf()
 
 # create_boxplots()
 #
