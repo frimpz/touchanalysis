@@ -143,6 +143,8 @@ def monkey_pref(filename="monkey_pref.xlsx", data_frame=cat_result):
 
     counts_df = pd.DataFrame.from_records(count[1:], columns=count[0])
     counts_df.to_excel(writer, sheet_name='Counts of Occurrence')
+
+    # create box plots from occurrence
     create_plots(count_dic, "figs2/")
 
     cat_cpd = z.estimate_cpd('Category', prior_type="BDeu", equivalent_sample_size=6).to_factor()
@@ -167,8 +169,8 @@ def monkey_pref(filename="monkey_pref.xlsx", data_frame=cat_result):
     prob_df = pd.DataFrame.from_records(prob[1:], columns=prob[0])
     prob_df.to_excel(writer, sheet_name='Conditional Prob Dist')
 
+    # create boxplots from probabilities
     create_plots(data_files, "figs/")
-
 
     # Find the preffered category for each monkey given left and right
     pref_df = prob_df.sort_values('Probability', ascending=False).drop_duplicates(['Monkey'])
