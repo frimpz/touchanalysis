@@ -1,6 +1,7 @@
 import os
 import pickle
 
+import math
 import pandas as pd
 from pgmpy.estimators import BayesianEstimator
 from pgmpy.models import BayesianModel
@@ -105,9 +106,6 @@ monkeys = list(set((monkey_df.Monkey)))
 gender_df = result[['gender', 'Left_categ', 'Right_categ', 'Orientation']]
 genders = list(set((gender_df.gender)))
 
-print(monkey_df)
-print(gender_df)
-exit()
 """
     Method creates  the excel file and box plot
     :param excel_rows: all columns that appear in excel file
@@ -129,6 +127,7 @@ def distribution(excel_rows, item_name,  items, file_name, df_cols, groupby_cols
     Z_score = abs(st.norm.ppf(0.025))
     alpha = 1-0.95
     data_files = {}
+    Orientations = ["left", "right"]
 
     # create dataframe
     for item in items:
@@ -137,14 +136,14 @@ def distribution(excel_rows, item_name,  items, file_name, df_cols, groupby_cols
         elif item_name == "gender":
             df = (gender_df[(gender_df.gender == item)])
         z = BayesianEstimator(model, df)
-        cat_cpd = z.estimate_cpd('Category', prior_type="bdeu", equivalent_sample_size=6)  # .to_factor()
+        cat_cpd = z.estimate_cpd('Orientation', prior_type="bdeu", equivalent_sample_size=6)  # .to_factor()
         for left in categories:
             for right in categories:
-                for cat in categories:
+                for cat in Orientations:
                     try:
-                        count = z.state_counts('Category')[left][right][cat]
+                        count = z.state_counts('Orientation')[left][right][cat]
                         prob = cat_cpd.get_value(
-                            **{'Left_categ': left, 'Right_categ': right, 'Category': cat})
+                            **{'Left_categ': left, 'Right_categ': right, 'Orientation': cat})
 
                         # p_hat and q_hat set to conservative since we have no previous data #0.5 for each
                         # Since its probability I clip to 0
@@ -162,7 +161,7 @@ def distribution(excel_rows, item_name,  items, file_name, df_cols, groupby_cols
     prob_df = pd.DataFrame.from_records(excel_rows[1:], columns=excel_rows[0])
     gen_df = prob_df[df_cols].groupby(groupby_cols)['Count'].agg(['sum'])# .reset_index()
 
-    ax, bp = gen_df.boxplot(rot=90, fontsize=12, figsize=(8, 10), column=['sum'], by=bp_group, return_type="both")[0]
+    ax, bp = gen_df.boxplot(rot=90, fontsize=12, figsize=(16, 10), column=['sum'], by=bp_group, return_type="both")[0]
     plt.title(item_name.capitalize()+ " Box plot grouped by : " + str(bp_group))
     plt.suptitle('')
     plt.ylabel("sum")
@@ -192,15 +191,15 @@ def distribution(excel_rows, item_name,  items, file_name, df_cols, groupby_cols
 
 # for monkeys
 categories = ['Affiliative', 'Aggressive', 'Cynomolgus', 'Fruit',  'Lab', 'Nature']
-model = BayesianModel([('Left_categ', 'Category'), ('Right_categ', 'Category')])
+model = BayesianModel([('Left_categ', 'Orientation'), ('Right_categ', 'Orientation')])
 
-excel_rows = [['Monkey', 'Left-Category', 'Right-Category', 'Category', 'Count', 'Probability', 'lower CI', 'upper CI', 'alpha']]
+excel_rows = [['Monkey', 'Left-Category', 'Right-Category', 'Orientation', 'Count', 'Probability', 'lower CI', 'upper CI', 'alpha']]
 items = monkeys
-file_name = "results/monkey"
+file_name = "results/monkey-orientation"
 
-df_cols = ['Left-Category', 'Right-Category', 'Category', 'Count']
-groupby_cols = ['Left-Category', 'Right-Category', 'Category']
-bp_group = ['Category']
+df_cols = ['Left-Category', 'Right-Category', 'Orientation', 'Count']
+groupby_cols = ['Left-Category', 'Right-Category', 'Orientation']
+bp_group = ['Orientation']
 item_name = 'Monkey'
 
 distribution(excel_rows, item_name,  items, file_name, df_cols, groupby_cols, bp_group)
@@ -208,15 +207,15 @@ distribution(excel_rows, item_name,  items, file_name, df_cols, groupby_cols, bp
 
 # for gender
 categories = ['Affiliative', 'Aggressive', 'Cynomolgus', 'Fruit',  'Lab', 'Nature']
-model = BayesianModel([('Left_categ', 'Category'), ('Right_categ', 'Category')])
+model = BayesianModel([('Left_categ', 'Orientation'), ('Right_categ', 'Orientation')])
 
-excel_rows = [['gender', 'Left-Category', 'Right-Category', 'Category', 'Count', 'Probability', 'lower CI', 'upper CI', 'alpha']]
+excel_rows = [['gender', 'Left-Category', 'Right-Category', 'Orientation', 'Count', 'Probability', 'lower CI', 'upper CI', 'alpha']]
 items = genders
-file_name = "results/gender"
+file_name = "results/gender-orientation"
 
-df_cols = ['gender', 'Left-Category', 'Right-Category', 'Category', 'Count']
-groupby_cols = ['gender', 'Left-Category', 'Right-Category', 'Category']
-bp_group = ['gender', 'Category']
+df_cols = ['gender', 'Left-Category', 'Right-Category', 'Orientation', 'Count']
+groupby_cols = ['gender', 'Left-Category', 'Right-Category', 'Orientation']
+bp_group = ['gender', 'Orientation']
 item_name = 'gender'
 
 distribution(excel_rows, item_name,  items, file_name, df_cols, groupby_cols, bp_group)

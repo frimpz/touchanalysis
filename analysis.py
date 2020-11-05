@@ -149,7 +149,7 @@ def distribution(excel_rows, item_name,  items, file_name, df_cols, groupby_cols
     prob_df = pd.DataFrame.from_records(excel_rows[1:], columns=excel_rows[0])
     gen_df = prob_df[df_cols].groupby(groupby_cols)['Count'].agg(['sum'])# .reset_index()
 
-    ax, bp = gen_df.boxplot(rot=90, fontsize=12, figsize=(8, 10), column=['sum'], by=bp_group, return_type="both")[0]
+    ax, bp = gen_df.boxplot(rot=90, fontsize=12, figsize=(24, 10), column=['sum'], by=bp_group, return_type="both")[0]
     plt.title(item_name.capitalize()+ " Box plot grouped by : " + str(bp_group))
     plt.suptitle('')
     plt.ylabel("sum")
