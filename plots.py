@@ -51,8 +51,8 @@ def create_boxplots(data=None, title="", filename=""):
         bx.append(i)
     ax.legend(bx, list(x_label), loc='upper right')
     ax.title.set_text(title)
-    plt.savefig(filename, dpi=100)
-    # plt.show()
+    # plt.savefig(filename, dpi=100)
+    plt.show()
     plt.clf()
 
 # create_boxplots()
