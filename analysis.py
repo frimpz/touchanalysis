@@ -91,6 +91,9 @@ monkeys = list(set((monkey_df.Monkey)))
 gender_df = result[['gender', 'Left_categ', 'Right_categ', 'Category']]
 genders = list(set((gender_df.gender)))
 
+# x = (result[['Monkey', 'Left_categ', 'Right_categ', 'Category']].\
+#     groupby(['Monkey', 'Left_categ', 'Right_categ']).size()/216).reset_index()
+
 
 """
     Method creates  the excel file and box plot
