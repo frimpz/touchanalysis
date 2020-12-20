@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 """
     Method creates multiple box plots
@@ -55,8 +56,40 @@ def create_boxplots(data=None, title="", filename=""):
     plt.show()
     plt.clf()
 
+
+def create_histograms1():
+
+    group1 = [1, 5, 1, 2, 2, 3, 4, 1, 5, 1, 3, 4]
+    group2 = [2, 2, 2, 1, 1, 3, 1, 4, 5, 2, 4, 4, 5, 5]
+    group3 = [3, 3, 3, 2, 2, 4, 2, 5, 1]
+
+    # Create a stacked histogram here
+    plt.hist([group1, group2, group3],
+             bins=[1, 2, 3, 4, 5, 6], rwidth=0.8, align="left", stacked=True)
+
+    plt.legend(["Group 1", "Group 2", "Group 3"])
+    plt.xticks([1, 2, 3, 4, 5])
+    plt.ylabel("Quantity")
+    plt.xlabel("Value")
+    plt.show()
+
 # create_boxplots()
-#
-#
-# color = list(np.random.choice(range(256), size=3))
-# print(color)
+
+
+def create_histograms():
+    df = pd.DataFrame({'a': [10, 20, 30, 40, 50], 'b': [15, 25, 30, 25, 35],
+                       'c': [35, 40, 29, 39, 49], 'd': [45, 50, 30, 15, 12]},
+                        index=['john', 'bob', 'Terry', 'Smith', 'Prince'])
+    print(df)
+    # matplotlib.style.use('ggplot')
+
+    # exit()
+
+    fig, ax = plt.subplots()
+    df[['a', 'c']].plot.bar(stacked=True, width=0.4, position=0.5, colormap="bwr", ax=ax, alpha=0.7)
+    df[['b', 'd']].plot.bar(stacked=True, width=0.4, position=-0.5, colormap="RdGy", ax=ax, alpha=0.7)
+    plt.legend(loc="upper right")
+    plt.show()
+
+
+# create_histograms()

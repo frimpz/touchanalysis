@@ -77,13 +77,16 @@ lft_result = result[(result['left_select'] != 'Nothing')]
 rgt_result = result[(result['right_select'] != 'Nothing')]
 
 
-print(result.head(10))
+# print(result.head(10))
 
 
-print(result.groupby(['Monkey', 'right_select']).size())
-print(result.groupby(['gender', 'Category']).size())
+# print(result.groupby(['Monkey', 'right_select']).size())
+result = result.groupby(['gender', 'Category']).size()
+writer = pd.ExcelWriter("overall.xlsx")
+result.to_excel(writer, sheet_name='Distribution')
+writer.save()
 
-print(result.shape)
+# print(result.shape)
 
 # print(result.head(30))
 

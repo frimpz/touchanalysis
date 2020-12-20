@@ -85,10 +85,17 @@ result.loc[result['Right_categ'].str.startswith("CYN"), 'Right_categ'] = "Cynomo
 result.loc[result['Right_categ'].str.startswith("LAB"), 'Right_categ'] = "Lab"
 result.loc[result['Right_categ'].str.startswith("AGG"), 'Right_categ'] = "Aggressive"
 
+
+
+print(result)
+
+
+exit()
 monkey_df = result[['Monkey', 'Left_categ', 'Right_categ', 'Category']]
 monkeys = list(set((monkey_df.Monkey)))
 
 gender_df = result[['gender', 'Left_categ', 'Right_categ', 'Category']]
+# gender_df =  gender_df[gender_df['gender']=='M']
 genders = list(set((gender_df.gender)))
 
 # x = (result[['Monkey', 'Left_categ', 'Right_categ', 'Category']].\
@@ -124,7 +131,7 @@ def distribution(excel_rows, item_name,  items, file_name, df_cols, groupby_cols
         elif item_name == "gender":
             df = (gender_df[(gender_df.gender == item)])
         z = BayesianEstimator(model, df)
-        cat_cpd = z.estimate_cpd('Category', prior_type="bdeu", equivalent_sample_size=6)  # .to_factor()
+        cat_cpd = z.estimate_cpd('Category', prior_type="bdeu", equivalent_sample_size=0)  # .to_factor()
         for left in categories:
             for right in categories:
                 for cat in categories:
@@ -147,6 +154,7 @@ def distribution(excel_rows, item_name,  items, file_name, df_cols, groupby_cols
                             # excel_rows.append([item, left, right, cat, count, 0, 0 , 0, 0])
 
     prob_df = pd.DataFrame.from_records(excel_rows[1:], columns=excel_rows[0])
+    # zoc = prob_df[[item_name, 'Left-Category', 'Right-Category', 'Category']]
     gen_df = prob_df[df_cols].groupby(groupby_cols)['Count'].agg(['sum'])# .reset_index()
 
     ax, bp = gen_df.boxplot(rot=90, fontsize=12, figsize=(24, 10), column=['sum'], by=bp_group, return_type="both")[0]
@@ -169,7 +177,7 @@ def distribution(excel_rows, item_name,  items, file_name, df_cols, groupby_cols
 
     writer = pd.ExcelWriter(file_name+".xlsx")
     prob_df.to_excel(writer, sheet_name='Distribution')
-    prob_df.sort_values('Probability', ascending=False).drop_duplicates([item_name]).to_excel(writer, sheet_name='prefference')
+    prob_df.sort_values('Probability', ascending=True).drop_duplicates([item_name]).to_excel(writer, sheet_name='prefference')
     writer.save()
 
     plt.savefig(file_name+".png", dpi=100)
@@ -206,4 +214,6 @@ groupby_cols = ['gender', 'Left-Category', 'Right-Category', 'Category']
 bp_group = ['gender', 'Category']
 item_name = 'gender'
 
-distribution(excel_rows, item_name,  items, file_name, df_cols, groupby_cols, bp_group)
+zoc = distribution(excel_rows, item_name,  items, file_name, df_cols, groupby_cols, bp_group)
+
+print(zoc)
