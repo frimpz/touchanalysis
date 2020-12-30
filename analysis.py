@@ -1,12 +1,9 @@
 import os
-import pickle
-
 import math
 import pandas as pd
 from pgmpy.estimators import BayesianEstimator
 from pgmpy.models import BayesianModel
 from functools import reduce
-from plots import create_boxplots
 import matplotlib.pyplot as plt
 from utils import read_csv
 import scipy.stats as st
@@ -33,6 +30,17 @@ def orientation(df, pos):
         return df['Category']
     else:
         return 'Nothing'
+
+
+def swap(df, pos):
+    if df['Left_categ'] < df['Right_categ'] and pos == "left":
+        return df['Left_categ']
+    elif df['Left_categ'] > df['Right_categ'] and pos == "left":
+        return df['Right_categ']
+    elif df['Left_categ'] < df['Right_categ'] and pos == "right":
+        return df['Right_categ']
+    elif df['Left_categ'] > df['Right_categ'] and pos == "right":
+        return df['Left_categ']
 
 
 # define a Custom aggregation
@@ -85,21 +93,35 @@ result.loc[result['Right_categ'].str.startswith("CYN"), 'Right_categ'] = "Cynomo
 result.loc[result['Right_categ'].str.startswith("LAB"), 'Right_categ'] = "Lab"
 result.loc[result['Right_categ'].str.startswith("AGG"), 'Right_categ'] = "Aggressive"
 
+result['Condition_One'] = result.apply(swap, pos="left",  axis=1)
+result['Condition_Two'] = result.apply(swap, pos="right",  axis=1)
+
+# Concatenate left and right
+result['Condition'] = result[['Condition_One', 'Condition_Two']].apply(lambda x: '_'.join(x), axis=1)
+
+# result = result.drop(columns=['Left_categ', 'Right_categ', 'Condition_One', 'Condition_Two'])
+result = result[['Monkey', 'gender', 'Condition', 'Category']]
 
 
-print(result)
+monkey_df = result[['Monkey', 'Condition', 'Category']]
+monkeys = list(set(monkey_df.Monkey))
 
 
-exit()
-monkey_df = result[['Monkey', 'Left_categ', 'Right_categ', 'Category']]
-monkeys = list(set((monkey_df.Monkey)))
+gender_df = result[['gender', 'Condition', 'Category']]
+genders = list(set(gender_df.gender))
 
-gender_df = result[['gender', 'Left_categ', 'Right_categ', 'Category']]
-# gender_df =  gender_df[gender_df['gender']=='M']
-genders = list(set((gender_df.gender)))
 
-# x = (result[['Monkey', 'Left_categ', 'Right_categ', 'Category']].\
-#     groupby(['Monkey', 'Left_categ', 'Right_categ']).size()/216).reset_index()
+def get_dataframe():
+    return result
+
+
+"""
+    To send dataframe to some other classs
+    """
+
+
+def get_gender_dataframe():
+    return gender_df
 
 
 """
@@ -117,7 +139,7 @@ genders = list(set((gender_df.gender)))
     """
 
 
-def distribution(excel_rows, item_name,  items, file_name, df_cols, groupby_cols, bp_group):
+def distribution(excel_rows, item_name,  items, file_name):
     # Using 95% confidence interval
     # (1-0.95)/2
     Z_score = abs(st.norm.ppf(0.025))
@@ -132,88 +154,75 @@ def distribution(excel_rows, item_name,  items, file_name, df_cols, groupby_cols
             df = (gender_df[(gender_df.gender == item)])
         z = BayesianEstimator(model, df)
         cat_cpd = z.estimate_cpd('Category', prior_type="bdeu", equivalent_sample_size=0)  # .to_factor()
-        for left in categories:
-            for right in categories:
-                for cat in categories:
-                    try:
-                        count = z.state_counts('Category')[left][right][cat]
-                        prob = cat_cpd.get_value(
-                            **{'Left_categ': left, 'Right_categ': right, 'Category': cat})
-
-                        # p_hat and q_hat set to conservative since we have no previous data #0.5 for each
-                        # Since its probability I clip to 0
-                        lower_ci = max(prob - Z_score * math.sqrt((0.5*0.5)/df.shape[0]), 0)
-                        upper_ci = prob + Z_score * math.sqrt((0.5*0.5)/df.shape[0])
-                        if not isNaN(prob) and prob > 0:
-                            excel_rows.append([item, left, right, cat, count, prob, lower_ci, upper_ci, alpha])
-                        else:
-                            pass
-                            # excel_rows.append([item, left, right, cat, count, prob, 0, 0, 0])
-                    except KeyError:
-                            pass
-                            # excel_rows.append([item, left, right, cat, count, 0, 0 , 0, 0])
+        for condition in conditions:
+            for category in categories:
+                try:
+                    count = list(z.state_counts('Category')[condition]
+                               .to_dict().values())[0][category]
+                    # count = z.state_counts('Category')[condition][category][category]
+                    prob = cat_cpd.get_value(
+                        **{'Condition': condition, 'Category': category})
+                    # print(prob)
+                    # p_hat and q_hat set to conservative since we have no previous data #0.5 for each
+                    # Since its probability I clip to 0
+                    lower_ci = max(prob - Z_score * math.sqrt((0.5*0.5)/df.shape[0]), 0)
+                    upper_ci = prob + Z_score * math.sqrt((0.5*0.5)/df.shape[0])
+                    if not isNaN(prob) and prob > 0:
+                        excel_rows.append([item, condition, category, count, prob, lower_ci, upper_ci, alpha])
+                    else:
+                        pass
+                        # excel_rows.append([item, left, right, cat, count, prob, 0, 0, 0])
+                except KeyError:
+                        pass
+                        # excel_rows.append([item, left, right, cat, count, 0, 0 , 0, 0])
 
     prob_df = pd.DataFrame.from_records(excel_rows[1:], columns=excel_rows[0])
-    # zoc = prob_df[[item_name, 'Left-Category', 'Right-Category', 'Category']]
-    gen_df = prob_df[df_cols].groupby(groupby_cols)['Count'].agg(['sum'])# .reset_index()
-
-    ax, bp = gen_df.boxplot(rot=90, fontsize=12, figsize=(24, 10), column=['sum'], by=bp_group, return_type="both")[0]
-    plt.title(item_name.capitalize()+ " Box plot grouped by : " + str(bp_group))
-    plt.suptitle('')
-    plt.ylabel("sum")
-
-    # group = ['Left-Category', 'Category']
-    # ax, bp = gen_df.boxplot(rot=90, fontsize=12, figsize=(24, 12), column=['sum'], by=group, return_type="both")[0]
-    # plt.title("Box plot grouped by : " + str(group))
-    # plt.suptitle('')
-    # plt.ylabel("sum")
-    #
-    #
-    # group = ['Right-Category', 'Category']
-    # ax, bp = gen_df.boxplot(rot=90, fontsize=12, figsize=(24, 12), column=['sum'], by=group, return_type="both")[0]
-    # plt.title("Box plot grouped by : " + str(group))
-    # plt.suptitle('')
-    # plt.ylabel("sum")
-
     writer = pd.ExcelWriter(file_name+".xlsx")
     prob_df.to_excel(writer, sheet_name='Distribution')
     prob_df.sort_values('Probability', ascending=True).drop_duplicates([item_name]).to_excel(writer, sheet_name='prefference')
     writer.save()
+    return prob_df
 
-    plt.savefig(file_name+".png", dpi=100)
-    plt.show()
-    plt.clf()
+
+
 
 
 # for monkeys
 categories = ['Affiliative', 'Aggressive', 'Cynomolgus', 'Fruit',  'Lab', 'Nature']
-model = BayesianModel([('Left_categ', 'Category'), ('Right_categ', 'Category')])
+conditions = list(set(result['Condition'].tolist()))
 
-excel_rows = [['Monkey', 'Left-Category', 'Right-Category', 'Category', 'Count', 'Probability', 'lower CI', 'upper CI', 'alpha']]
+model = BayesianModel([('Condition', 'Category')])
+
+excel_rows = [['Monkey', 'Condition', 'Category', 'Count', 'Probability', 'lower CI',
+               'upper CI', 'alpha']]
 items = monkeys
 file_name = "results/monkey"
 
-df_cols = ['Left-Category', 'Right-Category', 'Category', 'Count']
-groupby_cols = ['Left-Category', 'Right-Category', 'Category']
+df_cols = ['Condition', 'Category', 'Count']
+groupby_cols = ['Condition', 'Category']
 bp_group = ['Category']
 item_name = 'Monkey'
-
-distribution(excel_rows, item_name,  items, file_name, df_cols, groupby_cols, bp_group)
+# distribution(excel_rows, item_name,  items, file_name)
 
 
 # for gender
 categories = ['Affiliative', 'Aggressive', 'Cynomolgus', 'Fruit',  'Lab', 'Nature']
-model = BayesianModel([('Left_categ', 'Category'), ('Right_categ', 'Category')])
+model = BayesianModel([('Condition', 'Category')])
 
-excel_rows = [['gender', 'Left-Category', 'Right-Category', 'Category', 'Count', 'Probability', 'lower CI', 'upper CI', 'alpha']]
+excel_rows = [['gender', 'Condition', 'Category', 'Count', 'Probability', 'lower CI',
+               'upper CI', 'alpha']]
 items = genders
 file_name = "results/gender"
 
-df_cols = ['gender', 'Left-Category', 'Right-Category', 'Category', 'Count']
-groupby_cols = ['gender', 'Left-Category', 'Right-Category', 'Category']
+df_cols = ['gender', 'Condition', 'Category', 'Count']
+groupby_cols = ['gender', 'Condition', 'Category']
 bp_group = ['gender', 'Category']
 item_name = 'gender'
+# distribution(excel_rows, item_name,  items, file_name)
 
-zoc = distribution(excel_rows, item_name,  items, file_name, df_cols, groupby_cols, bp_group)
 
-print(zoc)
+
+
+
+
+
